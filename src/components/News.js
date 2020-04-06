@@ -4,17 +4,18 @@ import SearchBox from "./SearchBox";
 import NewsCard from "./NewsCard";
 import Button from "@material-ui/core/Button";
 import axios from "axios";
+import Container from '@material-ui/core/Container';
 
-const DEFAULT_QUERY = 'redux';
-const DEFAULT_HPP = '10';
+const DEFAULT_QUERY = "redux";
+const DEFAULT_HPP = "10";
 
-const PATH_BASE = 'https://hn.algolia.com/api/v1';
-const PATH_SEARCH = '/search';
-const PARAM_SEARCH = 'query=';
-const PARAM_PAGE = 'page=';
-const PARAM_HPP = 'hitsPerPage=';
+const PATH_BASE = "https://hn.algolia.com/api/v1";
+const PATH_SEARCH = "/search";
+const PARAM_SEARCH = "query=";
+const PARAM_PAGE = "page=";
+const PARAM_HPP = "hitsPerPage=";
 
-const isSearched = searchTerm => item =>
+const isSearched = (searchTerm) => (item) =>
   item.title.toLowerCase().includes(searchTerm.toLowerCase());
 
 export default class News extends Component {
@@ -27,7 +28,7 @@ export default class News extends Component {
       searchTerm: "React",
       searchKey: "",
       results: null,
-      error: null
+      error: null,
     };
 
     this.onSearchChange = this.onSearchChange.bind(this);
@@ -46,8 +47,8 @@ export default class News extends Component {
     this.setState({
       results: {
         ...results,
-        [searchKey]: { hits: updatedHits, page }
-      }
+        [searchKey]: { hits: updatedHits, page },
+      },
     });
   }
 
@@ -66,41 +67,43 @@ export default class News extends Component {
     axios(
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`
     )
-      .then(result => this._isMounted && this.setSearchTopStories(result.data))
-      .catch(error => this._isMounted && this.setState({ error }));
+      .then(
+        (result) => this._isMounted && this.setSearchTopStories(result.data)
+      )
+      .catch((error) => this._isMounted && this.setState({ error }));
   }
 
-  onSearchChange = event => {
+  onSearchChange = (event) => {
     this.setState({ searchTerm: event.target.value });
   };
 
-  needsToSearchTopStories = searchTerm => {
+  needsToSearchTopStories = (searchTerm) => {
     return !this.state.results[searchTerm];
   };
 
-  onDismiss = id => {
+  onDismiss = (id) => {
     const { searchKey, results } = this.state;
     const { hits, page } = results[searchKey];
 
-    const isNotId = item => item.objectID !== id;
+    const isNotId = (item) => item.objectID !== id;
     const updatedHits = hits.filter(isNotId);
 
     this.setState({
       results: {
         ...results,
-        [searchKey]: { hits: updatedHits, page }
-      }
+        [searchKey]: { hits: updatedHits, page },
+      },
     });
   };
 
-  onSearchSubmit = event => {
+  onSearchSubmit = (event) => {
     event.preventDefault();
     const { searchTerm } = this.state;
 
     this.setState({ searchKey: searchTerm });
 
     if (this.needsToSearchTopStories(searchTerm)) {
-      this.fetchSearchTopstories(searchTerm);
+      this.fetchSearchTopStories(searchTerm);
     }
   };
 
@@ -118,27 +121,31 @@ export default class News extends Component {
     }
     return (
       <React.Fragment>
+        <Container maxWidth="md">
         <SearchBox
+          id="sbox"
           value={searchTerm}
           onChange={this.onSearchChange}
           onSubmit={this.onSearchSubmit}
         />
-        {list
-            .filter(isSearched(searchTerm))
-            .map(item => (
-              <NewsCard
-                data={item}
-                pattern={searchTerm}
-                onDismiss={this.onDismiss}
-              />
-            ))}
-        <div className="interactions">
+        
+
+          {list.filter(isSearched(searchTerm)).map((item) => (
+            <NewsCard
+              data={item}
+              pattern={searchTerm}
+              onDismiss={this.onDismiss}
+            />
+          ))}
+        
+        <div id="more">
           <Button
             onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}
           >
             More
           </Button>
         </div>
+        </Container>
       </React.Fragment>
     );
   }
